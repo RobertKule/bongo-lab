@@ -1,0 +1,30 @@
+{
+  "name": "Bongo-Lab",
+  "short_name": "BongoLab",
+  "description": "Simulations de physique 2D pour les écoles secondaires africaines",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#007FFF",
+  "background_color": "#F8FAFC",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["education", "utilities"]
+}

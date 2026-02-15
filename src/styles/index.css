@@ -1,0 +1,163 @@
+@import "tailwindcss";
+
+:root {
+  /* African warm palette */
+  --color-terracotta: #C2703E;
+  --color-terracotta-dark: #A85A2A;
+  --color-olive: #7A8B3C;
+  --color-olive-soft: #8FA04E;
+  --color-golden: #E8C547;
+  --color-golden-sand: #F2D974;
+  --color-deep-blue: #1B4F72;
+  --color-deep-blue-light: #2471A3;
+  --color-off-white: #FDF8F0;
+  --color-warm-white: #FFF9F0;
+  --color-earth-brown: #5D3A1A;
+  --color-earth-brown-light: #8B5E3C;
+
+  /* Simulation-specific */
+  --color-pendulum: #D4792C;
+  --color-inclined: #D4A017;
+  --color-circuit-green: #6B9E3C;
+  --color-refraction-blue: #1A3A5C;
+  --color-lever-sand: #C9A84C;
+
+  /* Functional */
+  --color-danger: #CE1126;
+  --color-success: #2D6A4F;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background-color: var(--color-off-white);
+  color: #2C1810;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Splash screen */
+.splash-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-off-white);
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.splash-screen.fade-out {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.splash-circuit-bg {
+  position: absolute;
+  inset: 0;
+  opacity: 0.04;
+  background-image:
+    linear-gradient(90deg, var(--color-deep-blue) 1px, transparent 1px),
+    linear-gradient(0deg, var(--color-deep-blue) 1px, transparent 1px),
+    radial-gradient(circle 3px, var(--color-deep-blue) 1.5px, transparent 1.5px);
+  background-size: 40px 40px, 40px 40px, 40px 40px;
+  background-position: 0 0, 0 0, 20px 20px;
+}
+
+.splash-logo {
+  animation: pulse-scale 2s ease-in-out infinite;
+}
+
+@keyframes pulse-scale {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.splash-progress {
+  width: 200px;
+  height: 4px;
+  background: #E0D5C8;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 2rem;
+}
+
+.splash-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-terracotta), var(--color-golden), var(--color-deep-blue));
+  border-radius: 4px;
+  animation: progress-fill 2.2s ease-in-out forwards;
+}
+
+@keyframes progress-fill {
+  0% { width: 0%; }
+  30% { width: 40%; }
+  60% { width: 70%; }
+  90% { width: 90%; }
+  100% { width: 100%; }
+}
+
+/* Navigation slide-in */
+@keyframes slide-in-right {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.nav-drawer {
+  animation: slide-in-right 0.25s ease-out;
+}
+
+/* Simulation containers */
+.simulation-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 1rem;
+}
+
+.simulation-canvas {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-warm-white);
+  border-radius: 0.75rem;
+  min-height: 250px;
+  border: 2px dashed #D4C5B0;
+}
+
+.control-panel {
+  padding: 1rem;
+  background: white;
+  border-radius: 0.75rem;
+  margin-top: 1rem;
+  box-shadow: 0 1px 3px rgba(93, 58, 26, 0.1);
+}
+
+/* Card hover for touch devices */
+@media (hover: none) {
+  .sim-card:active {
+    transform: scale(0.97);
+  }
+}
+
+/* Safe area for notched phones */
+@supports (padding: max(0px)) {
+  .app-shell {
+    padding-bottom: max(0px, env(safe-area-inset-bottom));
+  }
+}
