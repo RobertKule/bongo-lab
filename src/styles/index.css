@@ -161,3 +161,36 @@ body {
     padding-bottom: max(0px, env(safe-area-inset-bottom));
   }
 }
+/* Transitions douces pour le changement de thème */
+* {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.1s ease;
+}
+
+/* Mode sombre pour les composants principaux */
+.dark body {
+  background-color: #0f172a; /* slate-900 */
+}
+
+.dark .bg-white {
+  background-color: #1e293b; /* slate-800 */
+}
+
+.dark .border-slate-200 {
+  border-color: #334155; /* slate-700 */
+}
+
+.dark .text-slate-600 {
+  color: #94a3b8; /* slate-400 */
+}
+
+.dark .text-slate-500 {
+  color: #64748b; /* slate-500 */
+}
+
+.dark .bg-slate-50 {
+  background-color: #1e293b; /* slate-800 */
+}
+
+.dark .bg-slate-100 {
+  background-color: #334155; /* slate-700 */
+}
