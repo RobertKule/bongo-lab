@@ -1,4 +1,7 @@
-// src/utils/translations.js
+/**
+ * French translations for Bongo-Lab (DRC Congo context).
+ * @module translations
+ */
 const translations = {
   app: {
     name: 'Bongo-Lab',
@@ -19,31 +22,12 @@ const translations = {
     save: 'Enregistrer',
     close: 'Fermer',
   },
-  
-simulations: {
-  pendulum: {
-    title: 'Pendule Simple',
-    description: 'Étudiez le mouvement oscillatoire d\'un pendule et explorez la relation entre la longueur et la période.',
-    subject: 'Mécanique',
-    period: 'Période mesurée',
-    theory: 'Théorie',
-    context: {
-      objectives: 'Dans cette simulation, vous allez :',
-      objectives1: 'Observer le mouvement oscillatoire d\'un pendule',
-      objectives2: 'Comprendre la relation entre longueur et période',
-      objectives3: 'Voir l\'effet de la gravité sur les oscillations',
-      objectives4: 'Mesurer la période et la comparer à la formule T = 2π√(L/g)'
+  simulations: {
+    pendulum: {
+      title: 'Pendule Simple',
+      description: 'Étudiez le mouvement oscillatoire d\'un pendule et explorez la relation entre la longueur et la période.',
+      subject: 'Mécanique',
     },
-    controls: {
-      length: 'Longueur',
-      lengthHelp: 'Longueur de la corde (cm)',
-      gravity: 'Gravité',
-      gravityHelp: 'Accélération gravitationnelle (g)',
-      start: 'Démarrer',
-      pause: 'Pause',
-      reset: 'Réinitialiser'
-    }
-  },
     inclinedPlane: {
       title: 'Plan Incliné',
       description: 'Analysez les forces sur un objet glissant sur un plan incliné avec ou sans frottement.',
@@ -75,7 +59,7 @@ simulations: {
     generic: 'Une erreur est survenue. Veuillez réessayer.',
     notFound: 'Page non trouvée',
     simulationError: 'Erreur dans la simulation. Veuillez réinitialiser.',
-}
+  },
 };
 
 export default translations;
