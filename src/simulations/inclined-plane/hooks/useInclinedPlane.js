@@ -214,16 +214,16 @@ const useInclinedPlane = (initialAngle = 30, initialFriction = 0.2, initialMass 
     }
   }, [angle, friction, getNormalizedAngle, getBlockPositionOnPlane, checkIfCanSlide]);
 
-  return {
-    angle, setAngle,
-    friction, setFriction,
-    mass, setMass,
-    isRunning, setIsRunning,
-    canSlide,
-    getBlockPosition,
-    resetPosition,
-    planeData: { startX, startY, planeLength, blockSize }
-  };
+return {
+  angle, setAngle,
+  friction, setFriction,
+  mass, setMass,
+  isRunning, setIsRunning,
+  canSlide, // ← Important !
+  getBlockPosition,
+  resetPosition,
+  planeData: { startX, startY, planeLength, blockSize }
+};
 };
 
 export default useInclinedPlane;

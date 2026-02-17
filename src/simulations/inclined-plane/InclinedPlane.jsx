@@ -29,8 +29,10 @@ const InclinedPlane = () => {
   friction, setFriction,
   mass, setMass,
   isRunning, setIsRunning,
+  canSlide, // ← Ajoute cette ligne
   getBlockPosition,
-  planeData // <--- 1. RÉCUPÉRER planeData ICI
+  resetPosition,
+  planeData
 } = useInclinedPlane(30, 0.2, 1);
 
   const [blockPos, setBlockPos] = useState({ x: 200, y: 200 });
@@ -188,7 +190,8 @@ const InclinedPlane = () => {
               <InclinedPlaneCanvas 
   blockPosition={blockPos} 
   angle={angle} 
-  planeData={planeData} // <--- 2. PASSER planeData ICI
+  planeData={planeData}
+  canSlide={canSlide} // ← Ajoute cette prop
   isFullscreen={isFullscreen} 
 />
             </div>

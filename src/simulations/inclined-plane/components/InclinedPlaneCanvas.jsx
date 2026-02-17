@@ -1,7 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Stage, Layer, Rect, Line, Circle, Group, Text } from 'react-konva';
 
-const InclinedPlaneCanvas = ({ blockPosition, angle, planeData, isFullscreen }) => {
+const InclinedPlaneCanvas = ({ 
+  blockPosition, 
+  angle, 
+  planeData, 
+  canSlide, // ← Ajoute cette prop
+  isFullscreen 
+}) => {
   const containerRef = useRef(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 500 });
 
@@ -110,17 +116,20 @@ const InclinedPlaneCanvas = ({ blockPosition, angle, planeData, isFullscreen }) 
               fontStyle="bold"
               fill="#22c55e"
             />
+            
+            {/* Indicateur de pente - version corrigée */}
             {!canSlide && (
-  <Text
-    x={startX + 100}
-    y={startY - 80}
-    text="⛔ Pas de pente - Le bloc ne glisse pas"
-    fontSize={14}
-    fontStyle="bold"
-    fill="#ef4444"
-    opacity={0.8}
-  />
-)}
+              <Text
+                x={startX + 50}
+                y={startY - 80}
+                text="⛔ Le bloc ne glisse pas (départ plus bas)"
+                fontSize={14}
+                fontStyle="bold"
+                fill="#ef4444"
+                opacity={0.9}
+              />
+            )}
+            
             {/* MARQUEUR D'ARRIVÉE (en bas) */}
             <Circle
               x={endX}
@@ -140,7 +149,7 @@ const InclinedPlaneCanvas = ({ blockPosition, angle, planeData, isFullscreen }) 
               fill="#ef4444"
             />
             
-            {/* LE BLOC - corrigé pour être SUR la ligne */}
+            {/* LE BLOC */}
             <Rect
               x={blockPosition.x}
               y={blockPosition.y}
@@ -164,23 +173,27 @@ const InclinedPlaneCanvas = ({ blockPosition, angle, planeData, isFullscreen }) 
               fill="#3b82f6"
             />
             
-            {/* Flèche de direction */}
-            <Line
-              points={[endX - 40, endY - 20, endX - 20, endY - 10, endX - 40, endY]}
-              stroke="#ef4444"
-              strokeWidth={2}
-              fill="#ef4444"
-              closed
-              opacity={0.7}
-            />
-            <Text
-              x={endX - 80}
-              y={endY - 40}
-              text="Sens de glissement"
-              fontSize={12}
-              fill="#ef4444"
-              opacity={0.7}
-            />
+            {/* Flèche de direction (visible seulement si le bloc peut glisser) */}
+            {canSlide && (
+              <>
+                <Line
+                  points={[endX - 40, endY - 20, endX - 20, endY - 10, endX - 40, endY]}
+                  stroke="#ef4444"
+                  strokeWidth={2}
+                  fill="#ef4444"
+                  closed
+                  opacity={0.7}
+                />
+                <Text
+                  x={endX - 80}
+                  y={endY - 40}
+                  text="Sens de glissement"
+                  fontSize={12}
+                  fill="#ef4444"
+                  opacity={0.7}
+                />
+              </>
+            )}
           </Group>
         </Layer>
       </Stage>
