@@ -8,7 +8,7 @@ import translations from '../utils/translations';
 const simulationComponents = {
   pendulum: lazy(() => import('../simulations/pendulum')),
   'inclined-plane': lazy(() => import('../simulations/inclined-plane')), 
-  circuit: lazy(() => import('../simulations/Circuit')), 
+  circuit: lazy(() => import('../simulations/circuit')), 
   optics: lazy(() => import('../simulations/Optics')), 
   lever: lazy(() => import('../simulations/Lever')), 
 };
