@@ -9,7 +9,7 @@ const simulationComponents = {
   pendulum: lazy(() => import('../simulations/pendulum')),
   'inclined-plane': lazy(() => import('../simulations/inclined-plane')), 
   circuit: lazy(() => import('../simulations/circuit')), 
-  optics: lazy(() => import('../simulations/Optics')), 
+  optics: lazy(() => import('../simulations/optics')), 
   lever: lazy(() => import('../simulations/Lever')), 
 };
 
