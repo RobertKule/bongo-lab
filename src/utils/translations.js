@@ -60,6 +60,18 @@ const translations = {
     notFound: 'Page non trouvée',
     simulationError: 'Erreur dans la simulation. Veuillez réinitialiser.',
   },
+  optics: {
+  title: "Réflexion et Réfraction",
+  description: "Explore les lois de Snell-Descartes avec des miroirs et des lentilles.",
+  subject: "Optique",
+  controls: {
+    incidence: "Angle d'incidence",
+    refractiveIndex1: "Indice milieu 1",
+    refractiveIndex2: "Indice milieu 2",
+    mirrorType: "Type de miroir",
+    lensType: "Type de lentille"
+  }
+}
 };
 
 export default translations;
