@@ -11,85 +11,56 @@ const useInclinedPlane = (initialAngle = 30, initialFriction = 0.2, initialMass 
   const [friction, setFriction] = useState(initialFriction);
   const [mass, setMass] = useState(initialMass);
   const [isRunning, setIsRunning] = useState(false);
-  const [canSlide, setCanSlide] = useState(true); // Indique si le bloc peut glisser
+  const [canSlide, setCanSlide] = useState(true);
 
-  // Paramètres fixes
-  const planeLength = 450;
+  const planeLength = 600;
   const startX = 150;
   const startY = 150;
   const blockSize = 40;
+  const planeThickness = 10;
 
-  // Normaliser l'angle entre 0 et 360°
-  const getNormalizedAngle = useCallback((angleDeg) => {
-    let normalized = angleDeg % 360;
-    if (normalized < 0) normalized += 360;
-    return (normalized * Math.PI) / 180;
+  // Calculer si le bloc peut glisser selon la physique
+  const checkIfCanSlide = useCallback((angleDeg, frictionVal) => {
+    const rad = (angleDeg * Math.PI) / 180;
+    // Formule: tan(θ) > μ
+    return Math.abs(Math.tan(rad)) > frictionVal;
   }, []);
 
-  // Vérifier si le départ est plus haut que l'arrivée
-  const checkIfCanSlide = useCallback((angleDeg) => {
-    const angleRad = getNormalizedAngle(angleDeg);
-    const endY = startY + planeLength * Math.sin(angleRad);
+  // Positionner le bloc sur la surface
+  const getAlignedPosition = useCallback((angleDeg, distance = 0) => {
+    const rad = (angleDeg * Math.PI) / 180;
+    const xBase = startX + distance * Math.cos(rad);
+    const yBase = startY + distance * Math.sin(rad);
     
-    // Le bloc peut glisser SI la fin est PLUS BASSE que le départ
-    // Donc si endY > startY (car Y augmente vers le bas)
-    return endY > startY;
-  }, [getNormalizedAngle]);
-
-  // Calculer la position du bloc SUR le plan
-  const getBlockPositionOnPlane = useCallback((angleDeg, distanceFromTop = 0) => {
-    const angleRad = getNormalizedAngle(angleDeg);
-    
-    // Position sur la ligne du plan
-    const lineX = startX + distanceFromTop * Math.cos(angleRad);
-    const lineY = startY + distanceFromTop * Math.sin(angleRad);
-    
-    // Décalage perpendiculaire pour que le bloc repose SUR la ligne
+    const offset = (blockSize / 2) + (planeThickness / 2);
     return {
-      x: lineX - (blockSize / 2) * Math.sin(angleRad),
-      y: lineY - (blockSize / 2) * Math.cos(angleRad)
+      x: xBase - offset * Math.sin(rad),
+      y: yBase + offset * Math.cos(rad)
     };
-  }, [getNormalizedAngle]);
+  }, []);
 
-  // Initialisation de Matter.js
   useEffect(() => {
     const engine = Matter.Engine.create();
     engineRef.current = engine;
-    engine.world.gravity.y = 0.8;
+    engine.world.gravity.y = 1.5;
 
-    const angleRad = getNormalizedAngle(angle);
-    const initialPos = getBlockPositionOnPlane(angle, 0);
-    const canSlideNow = checkIfCanSlide(angle);
-    setCanSlide(canSlideNow);
+    const rad = (angle * Math.PI) / 180;
+    const pos = getAlignedPosition(angle, 0);
 
-    // Plan incliné
     const plane = Matter.Bodies.rectangle(
-      startX + (planeLength/2) * Math.cos(angleRad),
-      startY + (planeLength/2) * Math.sin(angleRad),
-      planeLength, 4, 
-      { 
-        isStatic: true, 
-        angle: angleRad, 
-        friction: friction,
-        restitution: 0.1,
-        label: 'plane'
-      }
+      startX + (planeLength / 2) * Math.cos(rad),
+      startY + (planeLength / 2) * Math.sin(rad),
+      planeLength, planeThickness,
+      { isStatic: true, angle: rad, friction: friction }
     );
 
-    // Bloc - avec friction statique élevée si ne peut pas glisser
-    const block = Matter.Bodies.rectangle(
-      initialPos.x + blockSize/2, 
-      initialPos.y + blockSize/2, 
-      blockSize, blockSize, 
-      {
-        friction: canSlideNow ? friction : 1.0, // Friction max si pas de pente
-        frictionStatic: canSlideNow ? friction : 1.0,
-        mass: mass,
-        restitution: 0.1,
-        label: 'block',
-        inertia: Infinity // Empêche la rotation
-      }
-    );
+    const block = Matter.Bodies.rectangle(pos.x, pos.y, blockSize, blockSize, {
+      friction: friction,
+      frictionStatic: friction,
+      mass: mass,
+      restitution: 0,
+      inertia: Infinity
+    });
 
     Matter.World.add(engine.world, [plane, block]);
     planeRef.current = plane;
@@ -98,132 +69,93 @@ const useInclinedPlane = (initialAngle = 30, initialFriction = 0.2, initialMass 
     const runner = Matter.Runner.create();
     runnerRef.current = runner;
 
+    // Mettre à jour canSlide
+    setCanSlide(checkIfCanSlide(angle, friction));
+
     return () => {
       Matter.Runner.stop(runner);
       Matter.Engine.clear(engine);
     };
   }, []);
 
-  // Mise à jour de l'angle
+  // Sync en temps réel
   useEffect(() => {
     if (!isRunning && blockRef.current && planeRef.current) {
-      const angleRad = getNormalizedAngle(angle);
-      const initialPos = getBlockPositionOnPlane(angle, 0);
-      const canSlideNow = checkIfCanSlide(angle);
-      setCanSlide(canSlideNow);
+      const rad = (angle * Math.PI) / 180;
+      const pos = getAlignedPosition(angle, 0);
 
-      // Mettre à jour le plan
-      Matter.Body.setAngle(planeRef.current, angleRad);
+      Matter.Body.setAngle(planeRef.current, rad);
       Matter.Body.setPosition(planeRef.current, {
-        x: startX + (planeLength/2) * Math.cos(angleRad),
-        y: startY + (planeLength/2) * Math.sin(angleRad)
+        x: startX + (planeLength / 2) * Math.cos(rad),
+        y: startY + (planeLength / 2) * Math.sin(rad)
       });
 
-      // Mettre à jour le bloc avec la friction appropriée
-      blockRef.current.friction = canSlideNow ? friction : 1.0;
-      blockRef.current.frictionStatic = canSlideNow ? friction : 1.0;
-      
-      Matter.Body.setAngle(blockRef.current, 0);
-      Matter.Body.setPosition(blockRef.current, {
-        x: initialPos.x + blockSize/2,
-        y: initialPos.y + blockSize/2
-      });
+      Matter.Body.setPosition(blockRef.current, pos);
       Matter.Body.setVelocity(blockRef.current, { x: 0, y: 0 });
+      
+      setCanSlide(checkIfCanSlide(angle, friction));
     }
-  }, [angle, isRunning, friction, getNormalizedAngle, getBlockPositionOnPlane, checkIfCanSlide]);
+  }, [angle, isRunning, friction, getAlignedPosition, checkIfCanSlide]);
 
-  // Mise à jour de la friction
+  // Mise à jour friction
   useEffect(() => {
     if (blockRef.current && planeRef.current) {
-      const appropriateFriction = canSlide ? friction : 1.0;
-      blockRef.current.friction = appropriateFriction;
-      blockRef.current.frictionStatic = appropriateFriction;
+      blockRef.current.friction = friction;
+      blockRef.current.frictionStatic = friction;
       planeRef.current.friction = friction;
+      setCanSlide(checkIfCanSlide(angle, friction));
     }
-  }, [friction, canSlide]);
+  }, [friction, angle, checkIfCanSlide]);
 
-  // Mise à jour de la masse
-  useEffect(() => {
-    if (blockRef.current) {
-      Matter.Body.setMass(blockRef.current, mass);
-    }
-  }, [mass]);
-
-  // Gestion de la pause/reprise
+  // Gestion du Runner
   useEffect(() => {
     if (runnerRef.current && engineRef.current) {
-      if (isRunning && canSlide) {
+      if (isRunning) {
         Matter.Runner.run(runnerRef.current, engineRef.current);
       } else {
         Matter.Runner.stop(runnerRef.current);
       }
     }
-  }, [isRunning, canSlide]);
-
-  // Récupérer la position du bloc
-  const getBlockPosition = useCallback(() => {
-    if (!blockRef.current) return { x: startX, y: startY, angle: 0 };
-    
-    const pos = blockRef.current.position;
-    const angleRad = getNormalizedAngle(angle);
-    const canSlideNow = checkIfCanSlide(angle);
-    
-    // Calculer la distance parcourue
-    const dx = pos.x - blockSize/2 - startX;
-    const dy = pos.y - blockSize/2 - startY;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    
-    // Réinitialiser si arrivé en bas ET qu'on peut glisser
-    if (canSlideNow && distance > planeLength - blockSize) {
-      const initialPos = getBlockPositionOnPlane(angle, 0);
-      Matter.Body.setPosition(blockRef.current, {
-        x: initialPos.x + blockSize/2,
-        y: initialPos.y + blockSize/2
-      });
-      Matter.Body.setVelocity(blockRef.current, { x: 0, y: 0 });
-      return { 
-        x: initialPos.x, 
-        y: initialPos.y, 
-        angle: 0 
-      };
-    }
-    
-    return { 
-      x: pos.x - blockSize/2, 
-      y: pos.y - blockSize/2, 
-      angle: blockRef.current.angle 
-    };
-  }, [angle, getNormalizedAngle, getBlockPositionOnPlane, checkIfCanSlide]);
+  }, [isRunning]);
 
   // Réinitialisation manuelle
   const resetPosition = useCallback(() => {
     if (blockRef.current && planeRef.current) {
-      const angleRad = getNormalizedAngle(angle);
-      const initialPos = getBlockPositionOnPlane(angle, 0);
-      const canSlideNow = checkIfCanSlide(angle);
-      
-      blockRef.current.friction = canSlideNow ? friction : 1.0;
-      blockRef.current.frictionStatic = canSlideNow ? friction : 1.0;
-      
-      Matter.Body.setPosition(blockRef.current, {
-        x: initialPos.x + blockSize/2,
-        y: initialPos.y + blockSize/2
-      });
+      const pos = getAlignedPosition(angle, 0);
+      Matter.Body.setPosition(blockRef.current, pos);
       Matter.Body.setVelocity(blockRef.current, { x: 0, y: 0 });
       setIsRunning(false);
     }
-  }, [angle, friction, getNormalizedAngle, getBlockPositionOnPlane, checkIfCanSlide]);
+  }, [angle, getAlignedPosition]);
 
-return {
-  angle, setAngle,
-  friction, setFriction,
-  mass, setMass,
-  isRunning, setIsRunning,
-  canSlide, // ← Important !
-  getBlockPosition,
-  resetPosition,
-  planeData: { startX, startY, planeLength, blockSize }
-};
+  return {
+    angle, setAngle,
+    friction, setFriction,
+    mass, setMass,
+    isRunning, setIsRunning,
+    canSlide, // ← IMPORTANT: canSlide est retourné
+    resetPosition,
+    getBlockPosition: () => {
+      if (!blockRef.current) return { x: startX, y: startY, angle: 0 };
+      const pos = blockRef.current.position;
+      
+      // Auto-reset
+      const rad = (angle * Math.PI) / 180;
+      const dx = pos.x - startX;
+      const dy = pos.y - startY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      
+      if (dist > planeLength) {
+        const resetPos = getAlignedPosition(angle, 0);
+        Matter.Body.setPosition(blockRef.current, resetPos);
+        Matter.Body.setVelocity(blockRef.current, { x: 0, y: 0 });
+        return { x: resetPos.x, y: resetPos.y, angle: 0 };
+      }
+
+      return { x: pos.x, y: pos.y, angle: 0 };
+    },
+    planeData: { startX, startY, planeLength, blockSize, planeThickness }
+  };
 };
 
 export default useInclinedPlane;

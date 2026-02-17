@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ArrowLeft, Info, Maximize2, Minimize2, Video, StopCircle, AlertCircle, BookOpen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import useInclinedPlane from './hooks/useInclinedPlane';
@@ -15,8 +15,8 @@ const InclinedPlane = () => {
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [recordingTime, setRecordingTime] = useState(0);
   const timerRef = useRef(null);
+  const animationRef = useRef(null);
   
-  // Simulation i18n
   const t = {
     title: "Plan Incliné Interactif",
     description: "Découvre comment l'angle et la friction influencent la vitesse de glissement d'un objet.",
@@ -25,29 +25,38 @@ const InclinedPlane = () => {
   };
 
   const {
-  angle, setAngle,
-  friction, setFriction,
-  mass, setMass,
-  isRunning, setIsRunning,
-  canSlide, // ← Ajoute cette ligne
-  getBlockPosition,
-  resetPosition,
-  planeData
-} = useInclinedPlane(30, 0.2, 1);
+    angle, setAngle,
+    friction, setFriction,
+    mass, setMass,
+    isRunning, setIsRunning,
+    canSlide,
+    getBlockPosition,
+    resetPosition,
+    planeData
+  } = useInclinedPlane(30, 0.2, 1);
 
-  const [blockPos, setBlockPos] = useState({ x: 200, y: 200 });
+  const [blockPos, setBlockPos] = useState({ x: 150, y: 150 });
 
+  // Animation loop
   useEffect(() => {
-    let frame;
-    const loop = () => {
-      setBlockPos(getBlockPosition());
-      frame = requestAnimationFrame(loop);
+    const updatePosition = () => {
+      if (getBlockPosition) {
+        const newPos = getBlockPosition();
+        setBlockPos(newPos);
+      }
+      animationRef.current = requestAnimationFrame(updatePosition);
     };
-    loop();
-    return () => cancelAnimationFrame(frame);
+    
+    animationRef.current = requestAnimationFrame(updatePosition);
+    
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
   }, [getBlockPosition]);
 
-  // Timer pour l'enregistrement
+  // Timer enregistrement
   useEffect(() => {
     if (isRecording) {
       timerRef.current = setInterval(() => {
@@ -68,10 +77,7 @@ const InclinedPlane = () => {
 
   const startRecording = () => {
     const canvas = document.querySelector('canvas');
-    if (!canvas) {
-      alert("Canvas non trouvé");
-      return;
-    }
+    if (!canvas) return;
 
     try {
       const stream = canvas.captureStream(30);
@@ -105,7 +111,6 @@ const InclinedPlane = () => {
       
     } catch (error) {
       console.error("Erreur d'enregistrement:", error);
-      alert("Impossible de démarrer l'enregistrement.");
     }
   };
 
@@ -119,7 +124,7 @@ const InclinedPlane = () => {
     <div className="min-h-screen bg-[#fcfcfd] dark:bg-slate-950 text-slate-900 dark:text-slate-100">
       <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <button onClick={() => navigate('/')} className="p-2 -ml-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+          <button onClick={() => navigate('/')} className="p-2 -ml-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full">
             <ArrowLeft size={24} />
           </button>
           <span className="font-bold tracking-tight text-lg">{t.title}</span>
@@ -129,9 +134,8 @@ const InclinedPlane = () => {
               className={`p-2 rounded-full transition-all ${
                 isRecording 
                   ? 'bg-red-500 text-white animate-pulse' 
-                  : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+                  : 'hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
-              title={isRecording ? "Arrêter l'enregistrement" : "Enregistrer la simulation"}
             >
               {isRecording ? <StopCircle size={22} /> : <Video size={22} />}
             </button>
@@ -145,11 +149,10 @@ const InclinedPlane = () => {
       <main className="max-w-7xl mx-auto px-4 py-6 mb-20">
         <div className="flex flex-col lg:flex-row gap-8">
           
-          {/* ZONE VISUELLE */}
           <div className="flex-1 space-y-6">
             <div 
               ref={containerRef}
-              className={`relative bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-800 overflow-hidden group transition-all ${
+              className={`relative bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden group transition-all ${
                 isFullscreen ? 'fixed inset-0 z-50 rounded-none' : 'p-2'
               }`}
             >
@@ -181,19 +184,19 @@ const InclinedPlane = () => {
                  </button>
                  <button 
                    onClick={() => setIsFullscreen(!isFullscreen)} 
-                   className="p-4 bg-slate-900/90 dark:bg-white/90 text-white dark:text-slate-900 rounded-2xl shadow-xl active:scale-90 transition-transform"
+                   className="p-4 bg-slate-900/90 dark:bg-white/90 text-white dark:text-slate-900 rounded-2xl shadow-xl active:scale-90"
                  >
                    {isFullscreen ? <Minimize2 size={22} /> : <Maximize2 size={22} />}
                  </button>
               </div>
 
               <InclinedPlaneCanvas 
-  blockPosition={blockPos} 
-  angle={angle} 
-  planeData={planeData}
-  canSlide={canSlide} // ← Ajoute cette prop
-  isFullscreen={isFullscreen} 
-/>
+                blockPosition={blockPos} 
+                angle={angle} 
+                planeData={planeData}
+                canSlide={canSlide}
+                isFullscreen={isFullscreen} 
+              />
             </div>
 
             <div className="bg-white dark:bg-slate-900 p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm">
@@ -206,7 +209,6 @@ const InclinedPlane = () => {
             </div>
           </div>
 
-          {/* ZONE CONTRÔLES */}
           <aside className="lg:w-96">
             <div className="lg:sticky lg:top-24">
               <InclinedPlaneControls
@@ -215,7 +217,14 @@ const InclinedPlane = () => {
                 mass={mass} onMassChange={setMass}
                 isRunning={isRunning} 
                 onToggleRunning={() => setIsRunning(!isRunning)}
-                onReset={() => { setAngle(30); setFriction(0.2); setMass(1); setIsRunning(false); }}
+                onReset={() => { 
+                  setAngle(30); 
+                  setFriction(0.2); 
+                  setMass(1); 
+                  setIsRunning(false);
+                  if (resetPosition) resetPosition();
+                }}
+                canSlide={canSlide}
               />
               
               <div className="grid grid-cols-2 gap-4 mt-6">
