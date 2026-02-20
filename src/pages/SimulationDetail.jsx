@@ -10,7 +10,7 @@ const simulationComponents = {
   'inclined-plane': lazy(() => import('../simulations/inclined-plane')), 
   circuit: lazy(() => import('../simulations/circuit')), 
   optics: lazy(() => import('../simulations/optics')), 
-  lever: lazy(() => import('../simulations/Lever')), 
+  lever: lazy(() => import('../simulations/lever')), 
 };
 
 /**
